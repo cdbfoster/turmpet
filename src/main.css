@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css?family=Indie+Flower&display=swap');
+
+body {
+  display: grid;
+  grid-template-areas:
+    "current self-cards"
+    "pot-stats self-cards"
+    "submit-new used-cards";
+  grid-template-columns: 40% auto;
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+button, input[type="button"] {
+  border: none;
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+button img {
+  height: 25px;
+  width: 25px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  display: grid;
+  font-family: 'Indie Flower', sans-serif;
+  grid-template-areas:
+    "text button1"
+    "text button2";
+  grid-template-columns: 80% auto;
+  margin: 5px;
+  max-width: 300px;
+}
+
+.card.draw {
+  font-size: 1.5em;
+  width: 300px;
+}
+
+.card button {
+  flex-grow: 1;
+  padding: 2px;
+}
+
+.card button.delete-button, .card button.fail-button, #delete-all {
+  background-color: rgb(180, 30, 30);
+}
+
+.card button.delete-button:hover, .card button.fail-button:hover, #delete-all:hover {
+  background-color: rgb(200, 0, 0);
+}
+
+.card button.re-add-button, .card button.draw-next-button, #re-add-all, #submit-new input[type="button"], #draw-button {
+  background-color: rgb(30, 110, 30);
+}
+
+.card button.re-add-button:hover, .card button.draw-next-button:hover, #re-add-all:hover, #submit-new input[type="button"]:hover, #draw-button:hover {
+  background-color: rgb(30, 150, 30);
+}
+
+.card button:nth-child(2) {
+  grid-area: button1;
+  border-top-right-radius: 10px;
+}
+
+.card button:last-child {
+  grid-area: button2;
+  border-bottom-right-radius: 10px;
+}
+
+.card button:nth-child(2):last-child {
+  grid-area: button1-start/button1-start/button2-end/button2-end;
+}
+
+.card .text {
+  display: block;
+  grid-area: text;
+  padding: 15px;
+}
+
+#draw-button {
+  border-radius: 10px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
+  padding: 20px;
+}
+
+#draw-button:disabled, #draw-button:disabled:hover {
+  background-color: rgb(110, 120, 110);
+}
+
+html {
+  margin: 0;
+}
+
+input[type="button"], #re-add-all, #delete-all {
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);
+  padding: 8px;
+}
+
+input[type="text"] {
+  font-family: "Indie Flower", sans-serif;
+  font-size: 1.2em;
+}
+
+#draw-button p, #re-add-all p, #delete-all p {
+  display: inline;
+  vertical-align: super;
+  margin: 0 0 0 5px;
+}
+
+p {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  background-color: rgb(255, 230, 230);
+  border-radius: 20px;
+  box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+section > p {
+  font-family: sans-serif;
+}
+
+section#current {
+  align-items: center;
+  grid-area: current;
+  justify-content: center;
+  min-height: 300px;
+  z-index: 1;
+}
+
+section#pot-stats {
+  grid-area: pot-stats;
+  z-index: 2;
+}
+
+section#pot-stats p:first-child {
+  margin: 0 0 10px;
+}
+
+section#self-cards {
+  grid-area: self-cards;
+  /*z-index: 5;*/
+  z-index: 4;
+}
+
+section#self-cards ul {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+section#submit-new {
+  flex-direction: row;
+  grid-area: submit-new;
+  z-index: 3;
+}
+
+section#used-cards {
+  grid-area: used-cards;
+  max-height: 800px;
+  /*z-index: 4;*/
+  z-index: 5;
+}
+
+section#used-cards > p {
+  margin-top: 10px;
+}
+
+section#used-cards .card {
+  font-size: 0.8em;
+}
+
+section#used-cards ul {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  min-height: 0;
+}
+
+section#used-cards ul li {
+  max-width: 50%;
+}
+
+section#used-cards ul li:not(:last-child) {
+    display: none;
+}
+
+#stage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+ul {
+  align-items: flex-start;
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  display: flex;
+}
+
+@media screen and (max-width: 800px) {
+  body {
+    display: flex;
+    flex-direction: column;
+    max-width: unset;
+  }
+
+  section {
+    z-index: unset !important;
+  }
+
+  section#current {
+    min-height: unset;
+  }
+}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8" />
+    <title>Turmpet Pot</title>
+    <link href="main.css?v=1.2" rel="stylesheet" />
+  </head>
+  <body>{% if not allowed %}
+    <section id="login">
+      <form method="post" autocomplete="off">
+        <input type="text" name="password" />
+        <input type="submit" value="Enter" />
+      </form>
+    </section>
+    {% else %}
+    <script>
+      function addValueToPot() {
+        let input = document.querySelector("#submit-new input[type=\"text\"]");
+        let text = input.value;
+        input.value = "";
+
+        fetch("new_card", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({"text": text})
+        })
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function updateCurrentState(state) {
+        let draw_button = document.querySelector("#current #draw-button");
+        if (state.draw === false) {
+          draw_button.innerHTML = "<p>Another player has the pot</p>";
+          draw_button.style.display = "block";
+          draw_button.disabled = true;
+        } else if (state.draw === null) {
+          draw_button.style.display = "block";
+          if (state.remaining > 0) {
+            draw_button.innerHTML = "<img src=\"draw.png\" /><p>Draw</p>";
+            draw_button.disabled = false;
+          } else {
+            draw_button.innerHTML = "<p>No cards in the pot</p>";
+            draw_button.disabled = true;
+          }
+        } else {
+          draw_button.style.display = "none";
+        }
+
+        let draw_stage = document.querySelector("#current #stage");
+        if (state.draw !== false && state.draw !== null) {
+          draw_stage.style.display = null;
+          document.querySelector("#current #stage .text").innerHTML = state.draw.text;
+        } else {
+          draw_stage.style.display = "none";
+        }
+
+        let count = document.querySelector("#pot-stats #count");
+        count.innerHTML = "Cards in the pot: " + state.remaining + " / " + state.total;
+
+        let turn_score = document.querySelector("#pot-stats #turn-score");
+        if (state.draw !== false && state.draw !== null) {
+          turn_score.innerHTML = "Turn score: " + state.turn_score;
+        } else {
+          turn_score.innerHTML = "Last turn score: " + state.turn_score;
+        }
+
+        let used_list_items = ""
+        for (let i = 0; i < state.used.length; i++) {
+          let card = state.used[i];
+          used_list_items += "<li>" + cardMarkup(card) + "</li>";
+        }
+        let used_list = document.querySelector("#used-cards ul");
+        used_list.innerHTML = used_list_items;
+
+        let submitted_list_items = ""
+        for (let i = 0; i < state.submitted.length; i++) {
+          let card = state.submitted[i];
+          submitted_list_items += "<li>" + cardMarkup(card, false) + "</li>";
+        }
+        let submitted_list = document.querySelector("#self-cards ul");
+        submitted_list.innerHTML = submitted_list_items;
+      }
+
+      function cardMarkup(card, readd=true) {
+        let markup = "<div class=\"card\">";
+        markup += "<p class=\"text\">" + card.text + "</p>";
+        if (readd) {
+          markup += "<button class=\"re-add-button\" onclick=\"reAddCard(" + card.id + ")\"><img src=\"return.png\" /></button>";
+        }
+        markup += "<button class=\"delete-button\" onclick=\"deleteCard(" + card.id + ")\"><img src=\"trash.png\" /></button>";
+        markup += "</div>";
+        return markup;
+      }
+
+      function deleteCard(id) {
+        fetch("delete_card", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({"id": id})
+        })
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function deleteAll() {
+        if (!confirm("This will delete all cards, for everyone.  Are you sure?")) {
+          return;
+        }
+
+        fetch("delete_all", {
+          method: "POST"
+        })
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function reAddCard(id) {
+        fetch("readd_card", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({"id": id})
+        })
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function reAddAll() {
+        if (!confirm("This will return all used cards to the pot.  Are you sure?")) {
+          return;
+        }
+
+        fetch("readd_all", {
+          method: "POST"
+        })
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function drawCard() {
+        fetch("draw_card")
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      function getCurrentState() {
+        fetch("current_state")
+        .then((response) => response.json())
+        .then((data) => updateCurrentState(data))
+        .catch((error) => console.error(error));
+      }
+
+      getCurrentState();
+      var loop = setInterval(getCurrentState, 1000);
+    </script>
+    <section id="current">
+      <button id="draw-button" onclick="drawCard()"><p>No cards in the pot</p></button>
+      <div id="stage">
+        <div class="card draw">
+          <p class="text"></p>
+          <button class="draw-next-button" onclick="drawCard()"><img src="draw.png" /></button>
+          <button class="fail-button" onclick="reAddCard(null)"><img src="return.png" />Pass the pot</button>
+        </div>
+      </div>
+    </section>
+    <section id="pot-stats">
+      <p id="count"></p>
+      <p id="turn-score"></p>
+    </section>
+    <section id="used-cards">
+      <button id="re-add-all" onclick="reAddAll()"><img src="return.png" /><p>Return all cards to the pot</p></button>
+      <button id="delete-all" onclick="deleteAll()"><img src="trash.png" /><p>Delete all</p></button>
+      <p>Most Recent Card:</p>
+      <ul></ul>
+    </section>
+    <section id="submit-new">
+      <form onsubmit="addValueToPot(); return false;" autocomplete="off">
+        <input type="text" name="text" />
+        <input type="button" value="Add to the pot" onclick="addValueToPot()" />
+      </form>
+    </section>
+    <section id="self-cards">
+      <p>Your Submitted Cards</p>
+      <ul></ul>
+    </section>
+    {%- endif %}
+  </body>
+</html>
